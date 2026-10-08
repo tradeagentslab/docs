@@ -41,8 +41,41 @@ jobs:
       # Tests must pass before anything goes out (production and preview alike).
       - run: npm test
 
-      # The project name comes from wrangler.toml. Secrets reach wrangler through env only;
-      # GitHub masks them in the log and nothing here prints them.
+      # Secrets reach wrangler and curl through env only; GitHub masks them in the log
+      # and nothing here prints them. Names come from site.config.json.
+      - name: Pages project (create if missing)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
+        run: |
+          set -eu
+          PROJECT=$(jq -r .pagesProject site.config.json)
+          CODE=$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT")
+          case "$CODE" in
+            200) echo "Pages project $PROJECT exists." ;;
+            404) npx --yes wrangler@4 pages project create "$PROJECT" --production-branch=main ;;
+            *) echo "Cloudflare answered $CODE when asked for the project." >&2; exit 1 ;;
+          esac
+
+      # The click counters: create the database if missing, write its id into
+      # wrangler.toml for this run only, and add the tables (they are IF NOT EXISTS).
+      - name: Counter database (production only)
+        if: inputs.target == 'production'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
+        run: |
+          set -eu
+          DB=$(jq -r .d1Database site.config.json)
+          id() { npx --yes wrangler@4 d1 list --json | jq -r --arg d "$DB" '.[] | select(.name == $d) | .uuid'; }
+          ID=$(id)
+          if [ -z "$ID" ]; then npx --yes wrangler@4 d1 create "$DB" > /dev/null; ID=$(id); fi
+          sed -i "s/^database_id = .*/database_id = \"$ID\"/" wrangler.toml
+          npx --yes wrangler@4 d1 execute "$DB" --remote --file=schema.sql
+
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -50,3 +83,21 @@ jobs:
           WRANGLER_SEND_METRICS: "false"
           BRANCH: ${{ inputs.target == 'production' && 'main' || 'preview' }}
         run: npx --yes wrangler@4 pages deploy dist --branch="$BRANCH"
+
+      # Point the domain at the project (once; later runs see it is already there).
+      - name: Custom domain (production only)
+        if: inputs.target == 'production'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -eu
+          PROJECT=$(jq -r .pagesProject site.config.json)
+          DOMAIN=$(jq -r .domain site.config.json)
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/domains"
+          if curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" | jq -e --arg d "$DOMAIN" 'any(.result[]; .name == $d)' > /dev/null; then
+            echo "$DOMAIN is already attached."
+          else
+            curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" \
+              --data "{\"name\":\"$DOMAIN\"}" "$API" | jq '{success, status: .result.status}'
+          fi

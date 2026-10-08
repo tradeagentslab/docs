@@ -7,8 +7,8 @@ pages_build_output_dir = "./dist"
 compatibility_date = "2026-01-01"
 
 # Click and block counters. Bound in production only, so clicks on preview deployments
-# are not counted. database_id is not a secret: before the first production deploy,
-# replace the zeros with the id that `wrangler d1 create` prints (see README).
+# are not counted. The deploy workflow creates the database if it is missing and
+# writes its id over the zeros for that run.
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "tal"

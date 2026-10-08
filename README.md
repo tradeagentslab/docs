@@ -49,13 +49,7 @@ GitHub → Actions → **deploy** → Run workflow → `preview` or `production`
 
 Repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 
-One-time setup on Cloudflare (names from `site.config.json`):
-
-```sh
-npx wrangler@4 pages project create <pagesProject> --production-branch=main
-npx wrangler@4 d1 create <d1Database>     # put the printed database_id into wrangler.toml
-npx wrangler@4 d1 execute <d1Database> --remote --file=schema.sql
-```
+There is no separate setup step. The deploy workflow creates the Pages project if it is missing; a production run also creates the counter database if it is missing, adds its tables, and attaches the domain. Names come from `site.config.json`.
 
 The counter database is bound in production only, so clicks on preview deployments are not counted.
 
