@@ -101,3 +101,15 @@ jobs:
             curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" \
               --data "{\"name\":\"$DOMAIN\"}" "$API" | jq '{success, status: .result.status}'
           fi
+          # The domain needs a DNS record pointing at the project. Add one (proxied CNAME) if
+          # the name has no A, AAAA or CNAME record yet; an existing one is left alone.
+          AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          ZONE=$(curl -fsS -H "$AUTH" "https://api.cloudflare.com/client/v4/zones?name=$DOMAIN" | jq -r '.result[0].id')
+          RECORDS="https://api.cloudflare.com/client/v4/zones/$ZONE/dns_records"
+          if curl -fsS -H "$AUTH" "$RECORDS?name=$DOMAIN" | jq -e 'any(.result[]; .type == "A" or .type == "AAAA" or .type == "CNAME")' > /dev/null; then
+            echo "$DOMAIN already has a DNS record."
+          else
+            curl -fsS -X POST -H "$AUTH" -H "Content-Type: application/json" \
+              --data "{\"type\":\"CNAME\",\"name\":\"$DOMAIN\",\"content\":\"$PROJECT.pages.dev\",\"proxied\":true}" \
+              "$RECORDS" | jq '{success, type: .result.type, proxied: .result.proxied}'
+          fi
