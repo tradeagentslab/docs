@@ -1,17 +1,9 @@
 ---
-title: 我们用的工具
-description: 我们自己在用的，和推荐给你的：跑代理、看图、放代理的服务器。
+title: 工具
+description: 推荐给你的：跑代理、看图、放代理的服务器。
 ---
 
-# 我们用的工具
-
-## 我们在用的
-
-| 工具 | 我们拿它做什么 | 花费 |
-|---|---|---|
-| [Claude Code](https://www.anthropic.com/claude-code) | 写代码 | 订阅 |
-| [GitHub]({{github}}) | 放代码、模板和每周榜单数据 | 免费 |
-| [Cloudflare](https://www.cloudflare.com) | 放这个网站和擂台的接口 | 免费额度 |
+# 工具
 
 ## 安全壳支持的代理软件
 

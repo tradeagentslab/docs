@@ -7,7 +7,7 @@ description: Who we are, how we make money, the disclaimer, and how to reach us.
 
 ## Who we are
 
-A small team. AI writes most of the code and content, and people review it. We're learning, like everyone, how to make AI agents follow rules.
+A small team. We're learning, like everyone, how to make AI agents follow rules.
 
 ## How we make money
 

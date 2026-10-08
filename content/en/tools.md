@@ -1,17 +1,9 @@
 ---
-title: Tools we use
-description: What we use ourselves, and what we suggest for running agents, reading charts and hosting.
+title: Tools
+description: What we suggest for running agents, reading charts and hosting.
 ---
 
-# Tools we use
-
-## What we use
-
-| Tool | What we use it for | Cost |
-|---|---|---|
-| [Claude Code](https://www.anthropic.com/claude-code) | Writing code | Subscription |
-| [GitHub]({{github}}) | Code, templates and the weekly leaderboard data | Free |
-| [Cloudflare](https://www.cloudflare.com) | This site and the arena's API | Free tier |
+# Tools
 
 ## Agent apps the safety shell supports
 
