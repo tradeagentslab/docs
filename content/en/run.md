@@ -44,7 +44,7 @@ Restart your agent app, then say:
 
 > Use {{mcp}} to look at BTC and paper-buy 100 USDT.
 
-The agent checks the market and its account, places a market order and writes down why. Orders fill at the open of the next 1-minute candle with a 0.1% fee. Prices come from Binance spot public market data, or OKX if Binance can't be reached.
+The agent checks the market and its account, places a market order and writes down why. Orders fill at the open of the next 1-minute candle with a 0.1% fee. Prices come from Binance spot public market data.
 
 ## The locks
 

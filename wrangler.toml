@@ -5,6 +5,9 @@
 name = "tradeagentslab-docs"
 pages_build_output_dir = "./dist"
 compatibility_date = "2026-01-01"
+# The live board fetches the arena Worker on this same domain; this makes that fetch go out
+# over the public internet so it reaches the Worker instead of skipping it.
+compatibility_flags = ["global_fetch_strictly_public"]
 
 # Click and block counters. Bound in production only, so clicks on preview deployments
 # are not counted. The deploy workflow creates the database if it is missing and
