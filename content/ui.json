@@ -25,7 +25,7 @@
       "run": "零代码跑法",
       "about": "关于和免责",
       "group": "中文群（Telegram）",
-      "fine": "群规只有一句：主动私聊你的都是骗子。 · 代码 MIT 许可"
+      "fine": "代码 MIT 许可"
     }
   },
   "en": {
@@ -54,7 +54,7 @@
       "run": "Run with no code",
       "about": "About and disclaimer",
       "group": "Telegram group for Chinese speakers",
-      "fine": "One rule everywhere: anyone who DMs you first is a scammer. · Code MIT licensed"
+      "fine": "Code MIT licensed"
     }
   }
 }

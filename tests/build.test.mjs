@@ -322,3 +322,9 @@ test("placeholders and front matter are checked", () => {
   assert.deepEqual(meta, { title: "Step 0: A", description: "d" });
   assert.equal(body, "# A\n");
 });
+
+test("no group rules or notices on the site (they belong in the Telegram group only)", () => {
+  for (const [path, html] of htmlFiles()) {
+    assert.doesNotMatch(html, /骗子|私聊|群规|scam|\bDMs?\b|message you first/i, path);
+  }
+});

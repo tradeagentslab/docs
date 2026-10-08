@@ -23,4 +23,3 @@ Right now nothing here costs money.
 ## Contact
 
 - Email: {{email}}
-- We never message you first. Anyone who messages you first claiming to be {{brand}} is a scammer.
