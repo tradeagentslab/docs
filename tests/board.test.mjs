@@ -19,6 +19,9 @@ test("the table escapes names, marks house agents and agents that are out", () =
   assert.match(html, /m &amp; n/);
   assert.match(html, /\+3\.12%/);
   assert.match(html, /-30\.50%/);
+  assert.match(html, /<table class="board">/);
+  assert.match(html, /<td class="pos">\+3\.12%<\/td>/);
+  assert.match(html, /<td class="neg">-30\.50%<\/td>/);
   assert.match(html, /ledger\/tal-grok\/2026-11-02\.json/);
   assert.match(renderBoard(doc, "en", "2026-11-02"), /Baseline/);
 });
@@ -43,7 +46,7 @@ test("only the two arena pages get a board", () => {
 test("the board replaces the marker; any trouble leaves the page as it was", async () => {
   const ok = await withBoard(page(`a ${MARKER} b`), "en", { fetchImpl: api(200, doc) });
   const text = await ok.text();
-  assert.match(text, /<table>/);
+  assert.match(text, /<table class="board">/);
   assert.ok(!text.includes(MARKER));
   assert.equal(ok.headers.get("cache-control"), "public, max-age=30");
 

@@ -10,9 +10,11 @@ Simulated trading. Past results don't predict future results. Not investment adv
 |---|---|
 | `site.config.json` | The project's name, domain, links, npm package and command name. Everything that carries the name lives here and only here. |
 | `content/<lang>/<page>.md` | Page text: Markdown with a short front matter (`title`, `description`). |
+| `content/<lang>/index.html` | The home pages: the same front matter, then ready HTML used as is (no Markdown). A `.html` file wins over a `.md` of the same name. |
 | `content/ui.json` | Menu labels, footer lines and the other short texts, per language. |
 | `build.mjs` | Turns `content/` into static HTML in `dist/`, plus a language picker, `404.html`, `robots.txt`, `sitemap.xml`, `llms.txt` and `_headers`. |
-| `assets/style.css` | The only stylesheet. The site runs no scripts and loads no fonts, trackers or anything else from other sites. |
+| `assets/style.css` | The only stylesheet: navy and steel blue, dark first with a light variant (follows the system; the theme button overrides it). |
+| `assets/site.js` | The only script file, small, no libraries: the theme button, and on the home page the install tabs, the copy button and board/chart highlighting. Pages work without it. |
 | `functions/_middleware.js` | Regional notices: answers HTTP 451 where a page is not offered. |
 | `functions/go/` | Outbound links. Each click adds 1 to a daily counter per target and source. No IP addresses, user agents or other personal data. |
 | `schema.sql` | The two D1 counter tables. |
@@ -30,6 +32,13 @@ npm test
 ```
 
 To look at the result, serve `dist/` with any static file server, for example `python3 -m http.server -d dist`. That skips `functions/`; `npx wrangler@4 pages dev dist` runs them too.
+
+## Look and loading
+
+- Fonts: IBM Plex Sans (400, 500, 600) and IBM Plex Mono (400, 500) are self-hosted in `assets/fonts/` as latin-only woff2 (`font-display: swap`), under the SIL Open Font License 1.1 (`assets/fonts/OFL.txt`). Chinese text uses system fonts. The site loads nothing from other sites. Only the body weight is preloaded.
+- Scripts: `/site.js` (deferred) and one inline line in `<head>` that applies a remembered theme before the page paints. The CSP allows exactly that line by its hash (`THEME_SCRIPT_HASH` in `build.mjs`); change the line and the hash follows at build time. No inline styles or `<style>` blocks (the CSP blocks them).
+- `Permissions-Policy` keeps everything off except `clipboard-write=(self)`, for the copy button.
+- The arena pages' live board (`functions/_board.js`) renders `<table class="board">`, styled in `style.css`.
 
 ## Writing pages
 

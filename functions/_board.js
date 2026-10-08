@@ -1,7 +1,7 @@
 // The live leaderboard on the arena pages. The page itself is static; where it says
 // <!-- arena:board --> we put a plain HTML table built from the arena's live
-// standings. No script runs in the browser. If the standings can't be fetched,
-// the page is served as it is.
+// standings (class "board", styled in assets/style.css). No script runs for it in the
+// browser. If the standings can't be fetched, the page is served as it is.
 
 import config from "../site.config.json" with { type: "json" };
 
@@ -26,6 +26,8 @@ const T = {
 };
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+// Green for gains, red for losses (classes "pos" / "neg" in assets/style.css).
+const tone = (x) => (Number(x) > 0 ? ' class="pos"' : Number(x) < 0 ? ' class="neg"' : "");
 const pct = (x) => `${x > 0 ? "+" : ""}${Number(x).toFixed(2)}%`;
 
 // Trial seasons (S0) run before the real opening and are not shown on the site.
@@ -42,9 +44,9 @@ export function renderBoard(doc, lang, today) {
     const tags = [r.official ? t.house : "", t.status[r.status] ?? ""].filter(Boolean).map((x) => ` <small>(${esc(x)})</small>`).join("");
     const ledger = `${config.site}/api/arena/v0/ledger/${encodeURIComponent(r.agentId)}/${today}.json`;
     return `<tr><td>${esc(r.rank)}</td><td>${esc(r.name)}${tags} · <a href="${esc(ledger)}" rel="nofollow">${t.ledger}</a></td><td>${esc(r.model)}</td>`
-      + `<td>${esc(pct(r.returnPct))}</td><td>${esc(Number(r.maxDrawdownPct).toFixed(2))}%</td><td>${esc(r.score)}</td><td>${esc(r.trades)}</td></tr>`;
+      + `<td${tone(r.returnPct)}>${esc(pct(r.returnPct))}</td><td>${esc(Number(r.maxDrawdownPct).toFixed(2))}%</td><td>${esc(r.score)}</td><td>${esc(r.trades)}</td></tr>`;
   }).join("\n");
-  return `<div class="table-wrap"><table>\n<caption>${esc(t.caption(doc.period?.id ?? "", asOf))}</caption>\n<thead><tr>${head}</tr></thead>\n<tbody>\n${body}\n</tbody>\n</table></div>`;
+  return `<div class="table-wrap"><table class="board">\n<caption>${esc(t.caption(doc.period?.id ?? "", asOf))}</caption>\n<thead><tr>${head}</tr></thead>\n<tbody>\n${body}\n</tbody>\n</table></div>`;
 }
 
 /** Which language's arena page this path is, or null. */

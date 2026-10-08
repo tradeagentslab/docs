@@ -18,7 +18,16 @@
     ],
     "tagline": "给用 AI 做、跑、看交易代理的人的开源基地和公开擂台。",
     "notFound": "找不到这一页。",
-    "home": "回首页"
+    "home": "回首页",
+    "langShort": "中文",
+    "theme": "主题",
+    "footer": {
+      "arena": "擂台",
+      "run": "零代码跑法",
+      "about": "关于和免责",
+      "group": "中文群（Telegram）",
+      "fine": "群规只有一句：主动私聊你的都是骗子。 · 代码 MIT 许可"
+    }
   },
   "en": {
     "langName": "English",
@@ -39,6 +48,15 @@
     ],
     "tagline": "An open-source home and public arena for people who build, run and watch AI trading agents.",
     "notFound": "Page not found.",
-    "home": "Home"
+    "home": "Home",
+    "langShort": "EN",
+    "theme": "Theme",
+    "footer": {
+      "arena": "Arena",
+      "run": "Run with no code",
+      "about": "About and disclaimer",
+      "group": "Telegram group for Chinese speakers",
+      "fine": "One rule everywhere: anyone who DMs you first is a scammer. · Code MIT licensed"
+    }
   }
 }
