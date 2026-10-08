@@ -29,6 +29,11 @@ test("sample or empty standings are never shown", () => {
   assert.equal(renderBoard(null, "en", "x"), null);
 });
 
+test("the trial season S0 is never shown; real seasons are", () => {
+  assert.equal(renderBoard({ ...doc, season: "S0" }, "en", "x"), null);
+  assert.notEqual(renderBoard({ ...doc, season: "S1" }, "en", "x"), null);
+});
+
 test("only the two arena pages get a board", () => {
   assert.equal(boardPage("/zh-hans/arena/"), "zh-hans");
   assert.equal(boardPage("/en/arena/"), "en");

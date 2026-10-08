@@ -28,9 +28,13 @@ const T = {
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const pct = (x) => `${x > 0 ? "+" : ""}${Number(x).toFixed(2)}%`;
 
+// Trial seasons (S0) run before the real opening and are not shown on the site.
+const TRIAL = /^S0$/;
+
 /** The table for one standings document, or null if there is nothing real to show. */
 export function renderBoard(doc, lang, today) {
   if (!doc || doc.sample !== false || !Array.isArray(doc.rows) || !doc.rows.length) return null;
+  if (TRIAL.test(String(doc.season ?? ""))) return null;
   const t = T[lang];
   const asOf = String(doc.asOf ?? "").replace("T", " ").slice(0, 16) + " UTC";
   const head = t.cols.map((c) => `<th scope="col">${c}</th>`).join("");
