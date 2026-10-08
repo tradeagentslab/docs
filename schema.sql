@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS clicks (
 -- Requests answered with 451 by the regional gate.
 CREATE TABLE IF NOT EXISTS blocked (
   day  TEXT    NOT NULL,             -- UTC date
-  kind TEXT    NOT NULL,             -- gb-en, cn-account, cn-go
+  kind TEXT    NOT NULL,             -- cn-account, cn-go (gb-en until 2026-10-08)
   n    INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (day, kind)
 );

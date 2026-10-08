@@ -19,7 +19,6 @@ Right now nothing here costs money.
 - Nothing here is investment advice. We are not licensed investment advisers.
 - The code is provided "as is" under the MIT license, without warranty of any kind.
 - If you trade your own money, the gains and losses are yours.
-- Not for residents of the UK or US.
 
 ## Contact
 

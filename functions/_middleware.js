@@ -1,7 +1,7 @@
 // Regional gate. Runs before every request to the site.
 //
-// Cloudflare tells us the visitor's country in request.cf.country:
-//   GB: no English pages (/en/ and everything under it).
+// Cloudflare tells us the visitor's country in request.cf.country. Only mainland China is
+// gated (10-08: block direct access from mainland China only; exchanges handle the rest):
 //   CN: no "open an account" pages (/zh-hans/account/, /en/account/),
 //       and none of the sign-up or help-bot links (/go/signup/..., /go/help-bot).
 // Those requests get HTTP 451 and a one-line page. Everything else passes through.
@@ -12,7 +12,6 @@ import { boardPage, withBoard } from "./_board.js";
 import { HEADERS, bump, today } from "./_shared.js";
 
 const NOTICES = {
-  GB: { lang: "en", lines: ["This page is not available in the United Kingdom."] },
   CN: { lang: "zh-Hans", lines: ["本页不向中国大陆提供服务。", "This page is not available in mainland China."] },
 };
 
@@ -22,7 +21,7 @@ function within(path, prefix) {
 }
 
 // Lower-cases the path, decodes %xx and squeezes repeated slashes,
-// so /EN/ or /%65n/ can't slip past the rules below.
+// so /EN/ACCOUNT/ or /%65n/account/ can't slip past the rules below.
 export function normalPath(url) {
   let path = new URL(url).pathname;
   try {
@@ -33,9 +32,8 @@ export function normalPath(url) {
   return path.toLowerCase().replace(/\/{2,}/g, "/");
 }
 
-// Which block applies ("gb-en", "cn-account", "cn-go"), or null for none.
+// Which block applies ("cn-account", "cn-go"), or null for none.
 export function blockKind(country, path) {
-  if (country === "GB" && within(path, "/en")) return "gb-en";
   if (country === "CN") {
     if (within(path, "/zh-hans/account") || within(path, "/en/account")) return "cn-account";
     if (within(path, "/go/signup") || within(path, "/go/help-bot")) return "cn-go";

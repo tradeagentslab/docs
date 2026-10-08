@@ -12,7 +12,6 @@ import config from "../site.config.json" with { type: "json" };
 // Footer lines with fixed wording.
 const ZH = "模拟盘，过去不代表未来，不是投资建议。";
 const EN = "Simulated trading. Past results don't predict future results. Not investment advice.";
-const UK_US = "Not for residents of the UK or US.";
 
 let out;
 const files = new Map(); // path inside dist -> contents
@@ -52,7 +51,7 @@ test("builds every page in every language, plus the picker, 404 and site files",
   assert.equal(LANGS.length * PAGES.length, 14);
 });
 
-test("every page footer carries the disclaimer; English ones add the UK/US line on its own", () => {
+test("every page footer carries the disclaimer, and no page carries the old UK/US line", () => {
   for (const [path, html] of htmlFiles()) {
     const footer = footerOf(html);
     const zh = path.startsWith("zh-hans/");
@@ -61,8 +60,8 @@ test("every page footer carries the disclaimer; English ones add the UK/US line 
     if (zh || bilingual) assert.ok(footer.includes(`>${ZH}</p>`), `${path}: Chinese disclaimer`);
     if (en || bilingual) {
       assert.ok(footer.includes(`>${EN}</p>`), `${path}: English disclaimer`);
-      assert.ok(footer.includes(`<p lang="en">${UK_US}</p>`), `${path}: UK/US line`);
     }
+    assert.ok(!html.includes("Not for residents of the UK"), `${path}: no UK/US line`);
   }
 });
 
