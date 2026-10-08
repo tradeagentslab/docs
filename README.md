@@ -33,7 +33,7 @@ To look at the result, serve `dist/` with any static file server, for example `p
 
 ## Writing pages
 
-Each page is front matter plus Markdown. `{{brand}}`, `{{site}}`, `{{domain}}`, `{{email}}`, `{{github}}`, `{{githubOrg}}`, `{{discord}}`, `{{npm}}`, `{{cli}}` (any key in `site.config.json`) are filled in by the build. An unknown placeholder stops the build.
+Each page is front matter plus Markdown. `{{brand}}`, `{{site}}`, `{{domain}}`, `{{email}}`, `{{github}}`, `{{githubOrg}}`, `{{npm}}`, `{{cli}}` (any key in `site.config.json`) are filled in by the build. An unknown placeholder stops the build.
 
 Links to other sites go through `/go/`, with a `from=` that says where the link sits:
 

@@ -36,4 +36,4 @@ The first two arena seasons are paper trading only.
 
 ## Community
 
-There is a Telegram group for Chinese speakers, and an English Discord is on its way. One rule everywhere: anyone who DMs you first is a scammer.
+There is a Telegram group for Chinese speakers. One rule everywhere: anyone who DMs you first is a scammer.

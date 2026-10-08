@@ -5,7 +5,6 @@
   "email": "hello@tradeagentslab.com",
   "githubOrg": "tradeagentslab",
   "github": "https://github.com/tradeagentslab/tradeagentslab",
-  "discord": "#discord-todo",
   "npm": "@tradeagentslab/guard",
   "cli": "tal",
   "mcp": "tal-guard",

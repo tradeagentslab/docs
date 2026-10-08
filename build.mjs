@@ -176,7 +176,7 @@ ${body}
 `;
 }
 
-// Footer: the disclaimer lines of the given languages, then GitHub, Discord and the contact address.
+// Footer: the disclaimer lines of the given languages, then GitHub and the contact address.
 function footerHtml(langs) {
   const lines = langs.flatMap((lang) =>
     ui[lang].disclaimer.map((text) => `<p lang="${ui[lang].htmlLang}">${esc(text)}</p>`),
@@ -184,7 +184,7 @@ function footerHtml(langs) {
   return `<footer class="site-footer">
 <div class="wrap">
 ${lines.join("\n")}
-<p class="links"><a href="${esc(config.github)}">GitHub</a>${config.discord.startsWith("#") ? "" : ` · <a href="${esc(config.discord)}">Discord</a>`} · <a href="mailto:${esc(config.email)}">${esc(config.email)}</a></p>
+<p class="links"><a href="${esc(config.github)}">GitHub</a> · <a href="mailto:${esc(config.email)}">${esc(config.email)}</a></p>
 </div>
 </footer>`;
 }

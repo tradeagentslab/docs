@@ -10,7 +10,7 @@ import { ROOT } from "../build.mjs";
 import config from "../site.config.json" with { type: "json" };
 
 const FIELDS = [
-  "brand", "domain", "site", "email", "githubOrg", "github", "discord",
+  "brand", "domain", "site", "email", "githubOrg", "github",
   "npm", "cli", "mcp", "campaign", "pagesProject", "d1Database",
 ];
 

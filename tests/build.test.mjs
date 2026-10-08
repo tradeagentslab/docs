@@ -66,14 +66,12 @@ test("every page footer carries the disclaimer; English ones add the UK/US line 
   }
 });
 
-test("every page footer links to GitHub, Discord (once it exists) and the contact address", () => {
-  const discordReady = !config.discord.startsWith("#");
+test("every page footer links to GitHub and the contact address, and nothing mentions Discord", () => {
   for (const [path, html] of htmlFiles()) {
     const footer = footerOf(html);
     assert.ok(footer.includes(`<a href="${config.github}">GitHub</a>`), path);
-    // A placeholder like "#discord-todo" must never become a dead link.
-    assert.equal(footer.includes(">Discord</a>"), discordReady, path);
-    assert.ok(!html.includes(`href="#discord`), path);
+    // Discord is postponed (10-08); the English side uses GitHub Discussions for now.
+    assert.ok(!/discord/i.test(html), path);
     assert.ok(footer.includes(`<a href="mailto:${config.email}">${config.email}</a>`), path);
   }
 });
