@@ -140,20 +140,20 @@ test("the bot's start parameter never goes over 64 characters", async () => {
   assert.ok(start.length <= 64);
 });
 
-test("CN: sign-up and help-bot links answer 451 and count as blocked; tool links still work", async () => {
+test("CN: every /go/ link answers 451 and counts as blocked; no click is counted", async () => {
   const db = fakeD1();
   const env = { DB: db };
   for (const path of ["/go/signup/binance?l=en&from=x", "/go/signup/okx?l=zh-hans&from=x", "/go/help-bot?l=zhs&from=x", "/go/SIGNUP/binance?l=en"]) {
     const res = await visit(path, { country: "CN", env });
     assert.equal(res.status, 451, path);
     assert.equal(res.headers.get("location"), null, path);
-    assert.ok((await res.text()).includes("本页不向中国大陆提供服务。"), path);
+    assert.ok((await res.text()).includes("本站不向中国大陆提供服务。"), path);
   }
   const tool = await visit("/go/tool/tradingview?from=tools-zh-hans", { country: "CN", env });
-  assert.equal(tool.status, 302);
+  assert.equal(tool.status, 451);
 
-  assert.deepEqual(db.rows("SELECT * FROM blocked"), [{ day: today(), kind: "cn-go", n: 4 }]);
-  assert.deepEqual(clicks(db), [{ day: today(), target: "tool/tradingview", src: "tools-zh-hans", n: 1 }]);
+  assert.deepEqual(db.rows("SELECT * FROM blocked"), [{ day: today(), kind: "cn", n: 5 }]);
+  assert.deepEqual(clicks(db), []);
 
   // Other countries are not stopped here.
   assert.equal((await visit("/go/signup/binance?l=en&from=x", { country: "GB" })).status, 302);

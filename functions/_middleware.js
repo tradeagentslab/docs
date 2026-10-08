@@ -1,10 +1,8 @@
 // Regional gate. Runs before every request to the site.
 //
-// Cloudflare tells us the visitor's country in request.cf.country. Only mainland China is
-// gated (10-08: block direct access from mainland China only; exchanges handle the rest):
-//   CN: no "open an account" pages (/zh-hans/account/, /en/account/),
-//       and none of the sign-up or help-bot links (/go/signup/..., /go/help-bot).
-// Those requests get HTTP 451 and a one-line page. Everything else passes through.
+// Cloudflare tells us the visitor's country in request.cf.country. Visitors from mainland
+// China get HTTP 451 and a one-line page for every request: pages, files, /go/ links and
+// /api/ alike (2026-10-09). Everyone else passes through; exchanges handle their own regions.
 //
 // We count blocks per day and kind in D1 (table "blocked"), nothing else: no IP, no person.
 
@@ -12,13 +10,8 @@ import { boardPage, withBoard } from "./_board.js";
 import { HEADERS, bump, today } from "./_shared.js";
 
 const NOTICES = {
-  CN: { lang: "zh-Hans", lines: ["本页不向中国大陆提供服务。", "This page is not available in mainland China."] },
+  CN: { lang: "zh-Hans", lines: ["本站不向中国大陆提供服务。"] },
 };
-
-// "/en" covers /en, /en/ and /en/anything, but not /english.
-function within(path, prefix) {
-  return path === prefix || path.startsWith(`${prefix}/`);
-}
 
 // Lower-cases the path, decodes %xx and squeezes repeated slashes,
 // so /EN/ACCOUNT/ or /%65n/account/ can't slip past the rules below.
@@ -32,13 +25,10 @@ export function normalPath(url) {
   return path.toLowerCase().replace(/\/{2,}/g, "/");
 }
 
-// Which block applies ("cn-account", "cn-go"), or null for none.
+// Which block applies ("cn"), or null for none. The path no longer matters: the whole site
+// is closed to mainland China. Kept as a function so the counter keeps its "kind".
 export function blockKind(country, path) {
-  if (country === "CN") {
-    if (within(path, "/zh-hans/account") || within(path, "/en/account")) return "cn-account";
-    if (within(path, "/go/signup") || within(path, "/go/help-bot")) return "cn-go";
-  }
-  return null;
+  return country === "CN" ? "cn" : null;
 }
 
 function notice(country) {

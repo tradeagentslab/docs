@@ -15,7 +15,7 @@ Simulated trading. Past results don't predict future results. Not investment adv
 | `build.mjs` | Turns `content/` into static HTML in `dist/`, plus a language picker, `404.html`, `robots.txt`, `sitemap.xml`, `llms.txt` and `_headers`. |
 | `assets/style.css` | The only stylesheet: navy and steel blue, dark first with a light variant (follows the system; the theme button overrides it). |
 | `assets/site.js` | The only script file, small, no libraries: the theme button, and on the home page the install tabs, the copy button and board/chart highlighting. Pages work without it. |
-| `functions/_middleware.js` | Regional notices: answers HTTP 451 where a page is not offered. |
+| `functions/_middleware.js` | Regional gate: visitors from mainland China get HTTP 451 for the whole site. |
 | `functions/go/` | Outbound links. Each click adds 1 to a daily counter per target and source. No IP addresses, user agents or other personal data. |
 | `schema.sql` | The two D1 counter tables. |
 | `wrangler.toml` | Cloudflare Pages settings. |
