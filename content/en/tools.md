@@ -24,4 +24,4 @@ An agent on a server should only connect to paper trading and testnets.
 
 ## What we don't suggest
 
-Third-party bot platforms that ask for an API key that can place trades. We don't recommend them or link to them. The [scam checklist](/en/scams/) explains why.
+Third-party bot platforms that ask for an API key that can place trades. We don't recommend them or link to them.

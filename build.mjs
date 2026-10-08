@@ -24,7 +24,7 @@ export const ROOT = dirname(fileURLToPath(import.meta.url));
 // Page ids, in menu order. "index" is the home page of each language.
 // A page is content/<lang>/<page>.md (Markdown), or content/<lang>/<page>.html (front matter
 // plus ready HTML, used as is; the home pages are built this way).
-export const PAGES = ["index", "run", "tools", "scams", "arena", "account", "about"];
+export const PAGES = ["index", "run", "tools", "arena", "account", "about"];
 
 // Search engines get this language when none of ours matches (hreflang="x-default").
 // It also leads llms.txt.

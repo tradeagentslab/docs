@@ -57,7 +57,8 @@ test("builds every page in every language, plus the picker, 404 and site files",
     ...FONT_FILES.filter((f) => existsSync(join(ROOT, "assets", f))),
   ];
   assert.deepEqual([...files.keys()].sort(), expected.sort());
-  assert.equal(LANGS.length * PAGES.length, 14);
+  assert.equal(LANGS.length * PAGES.length, 12);
+  assert.ok(!PAGES.includes("scams"), "the scam checklist page was removed on 10-09");
 });
 
 test("every page footer carries the disclaimer, and no page carries the old UK/US line", () => {
