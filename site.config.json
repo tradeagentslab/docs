@@ -1,0 +1,15 @@
+{
+  "brand": "TradeAgents Lab",
+  "domain": "tradeagentslab.com",
+  "site": "https://tradeagentslab.com",
+  "email": "hello@tradeagentslab.com",
+  "githubOrg": "tradeagentslab",
+  "github": "https://github.com/tradeagentslab/tradeagentslab",
+  "discord": "#discord-todo",
+  "npm": "@tradeagentslab/guard",
+  "cli": "tal",
+  "mcp": "tal-guard",
+  "campaign": "tal",
+  "pagesProject": "tradeagentslab-docs",
+  "d1Database": "tal"
+}

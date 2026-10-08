@@ -1,0 +1,45 @@
+{
+  "zh-hans": {
+    "langName": "简体中文",
+    "htmlLang": "zh-Hans",
+    "skip": "跳到正文",
+    "navLabel": "页面",
+    "nav": {
+      "index": "首页",
+      "run": "零代码跑法",
+      "tools": "工具",
+      "scams": "防骗清单",
+      "arena": "擂台",
+      "account": "开账户",
+      "about": "关于"
+    },
+    "disclaimer": [
+      "模拟盘，过去不代表未来，不是投资建议。"
+    ],
+    "tagline": "给用 AI 做、跑、看交易代理的人的开源基地和公开擂台。",
+    "notFound": "找不到这一页。",
+    "home": "回首页"
+  },
+  "en": {
+    "langName": "English",
+    "htmlLang": "en",
+    "skip": "Skip to content",
+    "navLabel": "Pages",
+    "nav": {
+      "index": "Home",
+      "run": "Run",
+      "tools": "Tools",
+      "scams": "Scam checklist",
+      "arena": "Arena",
+      "account": "Account",
+      "about": "About"
+    },
+    "disclaimer": [
+      "Simulated trading. Past results don't predict future results. Not investment advice.",
+      "Not for residents of the UK or US."
+    ],
+    "tagline": "An open-source home and public arena for people who build, run and watch AI trading agents.",
+    "notFound": "Page not found.",
+    "home": "Home"
+  }
+}

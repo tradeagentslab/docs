@@ -1,0 +1,15 @@
+# Cloudflare Pages settings, read by `wrangler pages deploy`.
+# TOML can't read site.config.json, so two values are repeated here and must match it
+# (tests/config.test.mjs checks): name = "pagesProject", database_name = "d1Database".
+
+name = "tradeagentslab-docs"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-01-01"
+
+# Click and block counters. Bound in production only, so clicks on preview deployments
+# are not counted. database_id is not a secret: before the first production deploy,
+# replace the zeros with the id that `wrangler d1 create` prints (see README).
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "tal"
+database_id = "00000000-0000-0000-0000-000000000000"
