@@ -26,6 +26,13 @@ export const ROOT = dirname(fileURLToPath(import.meta.url));
 // plus ready HTML, used as is; the home pages are built this way).
 export const PAGES = ["index", "run", "tools", "arena", "account", "about"];
 
+// Unlisted pages: built like the others, but left out of the menu, the footer, the sitemap and
+// llms.txt. They are reached only through links we post elsewhere (the interview form) or
+// through a redirect (its thanks page). A "/" in the id makes a deeper address:
+// "talk/thanks" is content/<lang>/talk/thanks.md -> /<lang>/talk/thanks/.
+export const UNLISTED = ["talk", "talk/thanks"];
+export const ALL_PAGES = [...PAGES, ...UNLISTED];
+
 // Search engines get this language when none of ours matches (hreflang="x-default").
 // It also leads llms.txt.
 const DEFAULT_LANG = "en";
@@ -60,7 +67,8 @@ export const HEADERS = {
     `script-src 'self' '${THEME_SCRIPT_HASH}'`,
     "object-src 'none'",
     "base-uri 'none'",
-    "form-action 'none'",
+    // Our own forms only: the interview form posts to /talk/send on this site.
+    "form-action 'self'",
     "frame-ancestors 'none'",
   ].join("; "),
   "X-Content-Type-Options": "nosniff",
@@ -167,7 +175,7 @@ async function readPages() {
   const pages = {};
   for (const lang of LANGS) {
     pages[lang] = {};
-    for (const page of PAGES) {
+    for (const page of ALL_PAGES) {
       const where = await sourceOf(lang, page);
       const text = fill(await readFile(join(ROOT, where), "utf8"), where);
       const { meta, body } = parsePage(text, where);
@@ -265,6 +273,7 @@ ${fine.join("\n")}
 // A page: header (logo and name, menu, language link, theme button), the page, footer.
 // Markdown pages get a reading column with a "// <page>" label over the title;
 // the home page (ready HTML) fills the full width.
+// Front matter "noindex: yes" keeps a page out of search engines (the form's thanks page).
 function pageHtml(lang, page, meta, content, raw) {
   const t = ui[lang];
   const menu = PAGES.map((p) => {
@@ -307,6 +316,7 @@ ${footerHtml([lang])}`;
     description: meta.description,
     canonical: pagePath(lang, page),
     links: alternates(page),
+    noindex: meta.noindex === "yes",
     body,
   });
 }
@@ -436,7 +446,7 @@ export async function build(outDir = join(ROOT, "dist")) {
 
   const files = new Map();
   for (const lang of LANGS) {
-    for (const page of PAGES) {
+    for (const page of ALL_PAGES) {
       const { meta, html, raw } = pages[lang][page];
       files.set(`${pagePath(lang, page).slice(1)}index.html`, pageHtml(lang, page, meta, html, raw));
     }

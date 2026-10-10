@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { after, before, test } from "node:test";
 import { createHash } from "node:crypto";
-import { BODY_FONT, HEADERS, LANGS, PAGES, ROOT, THEME_SCRIPT, THEME_SCRIPT_HASH, build, fill, pagePath, parsePage, renderMarkdown, sourceOf } from "../build.mjs";
+import { ALL_PAGES, BODY_FONT, HEADERS, LANGS, PAGES, UNLISTED, ROOT, THEME_SCRIPT, THEME_SCRIPT_HASH, build, fill, pagePath, parsePage, renderMarkdown, sourceOf } from "../build.mjs";
 import { resolveGo } from "../functions/go/[[path]].js";
 import config from "../site.config.json" with { type: "json" };
 
@@ -40,7 +40,7 @@ const footerOf = (html) => html.slice(html.indexOf("<footer"), html.indexOf("</f
 
 test("builds every page in every language, plus the picker, 404 and site files", () => {
   const expected = [
-    ...LANGS.flatMap((lang) => PAGES.map((page) => fileOf(lang, page))),
+    ...LANGS.flatMap((lang) => ALL_PAGES.map((page) => fileOf(lang, page))),
     "index.html",
     "404.html",
     "robots.txt",
@@ -110,7 +110,7 @@ test("the menu lists all seven pages and marks the current one", () => {
 
 test("each content page has exactly one h1 and the right html lang", () => {
   for (const lang of LANGS) {
-    for (const page of PAGES) {
+    for (const page of ALL_PAGES) {
       const html = files.get(fileOf(lang, page));
       assert.equal(html.match(/<h1[\s>]/g)?.length, 1, `${lang}/${page}`);
       assert.match(html, lang === "en" ? /<html lang="en">/ : /<html lang="zh-Hans">/);
@@ -159,6 +159,9 @@ test("_headers sets the five security headers; the CSP allows only our files and
   }
   const csp = HEADERS["Content-Security-Policy"];
   assert.ok(csp.includes("default-src 'self'"));
+  // Forms may post to this site only (the interview form), nowhere else.
+  assert.ok(csp.includes("form-action 'self'"));
+  assert.doesNotMatch(csp, /form-action 'none'/);
   assert.ok(csp.includes(`script-src 'self' '${THEME_SCRIPT_HASH}'`));
   assert.equal(THEME_SCRIPT_HASH, `sha256-${createHash("sha256").update(THEME_SCRIPT).digest("base64")}`);
   assert.doesNotMatch(csp, /https?:|\*|unsafe|data:/);
@@ -266,7 +269,7 @@ test("home pages: sample board is marked as sample, models are '—', install pa
 });
 
 test("internal links point at pages that exist", () => {
-  const known = new Set(["/", ...LANGS.flatMap((lang) => PAGES.map((page) => pagePath(lang, page)))]);
+  const known = new Set(["/", ...LANGS.flatMap((lang) => ALL_PAGES.map((page) => pagePath(lang, page)))]);
   for (const [path, html] of htmlFiles()) {
     for (const [, href] of html.matchAll(/<a[^>]* href="(\/(?!go\/)[^"#]*)"/g)) {
       assert.ok(known.has(href), `${path}: ${href}`);
@@ -324,7 +327,48 @@ test("placeholders and front matter are checked", () => {
 });
 
 test("no group rules or notices on the site (they belong in the Telegram group only)", () => {
-  for (const [path, html] of htmlFiles()) {
+  // The interview form promises, in the approved copy, that we never DM anyone. That one
+  // sentence is about us, not a group rule, so it is allowed on the form page only.
+  const promise = { "zh-hans/talk/index.html": "我们不会私聊任何人。", "en/talk/index.html": "We won&#39;t DM anyone." };
+  for (const [path, page] of htmlFiles()) {
+    const html = promise[path] ? page.replace(promise[path], "") : page;
+    if (promise[path]) assert.notEqual(html, page, `${path}: the approved sentence`);
     assert.doesNotMatch(html, /骗子|私聊|群规|scam|\bDMs?\b|message you first/i, path);
   }
+});
+
+test("interview form pages: built, unlisted, a plain form posting to /talk/send", () => {
+  assert.deepEqual(UNLISTED, ["talk", "talk/thanks"]);
+  const sitemap = files.get("sitemap.xml");
+  const llms = files.get("llms.txt");
+  for (const lang of LANGS) {
+    for (const page of UNLISTED) {
+      const path = pagePath(lang, page);
+      assert.ok(files.has(fileOf(lang, page)), path);
+      assert.ok(!sitemap.includes(`${config.site}${path}<`), `${path}: not in the sitemap`);
+      assert.ok(!llms.includes(`(${config.site}${path})`), `${path}: not in llms.txt`);
+    }
+    // No page links to them in its menu or footer.
+    for (const [file, html] of htmlFiles()) {
+      const nav = html.includes("<nav") ? html.slice(html.indexOf("<nav"), html.indexOf("</nav>")) : "";
+      for (const part of [nav, footerOf(html)]) assert.doesNotMatch(part, /\/talk\//, `${file}: menu or footer`);
+    }
+    const html = files.get(fileOf(lang, "talk"));
+    const forms = [...html.matchAll(/<form [^>]*>/g)].map((m) => m[0]);
+    assert.deepEqual(forms, ['<form class="talk" method="post" action="/talk/send">'], lang);
+    assert.ok(html.includes(`<input type="hidden" name="lang" value="${lang}">`), lang);
+    assert.ok(html.includes('<input class="hp" type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true">'), lang);
+    const boxes = [...html.matchAll(/<textarea id="q(\d)" name="q\1" rows="4" maxlength="4000"><\/textarea>/g)].map((m) => m[1]);
+    assert.deepEqual(boxes, ["1", "2", "3", "4", "5", "6", "7", "8"], lang);
+    for (const n of boxes) assert.ok(html.includes(`<label for="q${n}">`), `${lang}: label q${n}`);
+    assert.match(html, /<button class="send" type="submit">(提交|Send)<\/button>/, lang);
+    assert.ok(html.includes(config.email), lang);
+    assert.doesNotMatch(html, /<meta name="robots" content="noindex">/, `${lang}: the form can be found`);
+    const thanks = files.get(fileOf(lang, "talk/thanks"));
+    assert.match(thanks, /<meta name="robots" content="noindex">/, `${lang}: thanks page not indexed`);
+    assert.ok(thanks.includes(`href="${pagePath(lang, "talk")}"`), `${lang}: thanks links back`);
+  }
+  const css = files.get("style.css");
+  assert.match(css, /\n\.hp \{[^}]*left: -10000px;/);
+  assert.match(css, /\.talk textarea \{[^}]*width: 100%;/);
 });
