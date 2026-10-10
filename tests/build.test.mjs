@@ -328,3 +328,31 @@ test("no group rules or notices on the site (they belong in the Telegram group o
     assert.doesNotMatch(html, /骗子|私聊|群规|scam|\bDMs?\b|message you first/i, path);
   }
 });
+
+test("indexed pages carry link-preview tags (Open Graph and X card); 404 does not", async () => {
+  const meta = (html, attr, name) => html.match(new RegExp(`<meta ${attr}="${name}" content="([^"]*)">`))?.[1];
+  for (const [path, html] of htmlFiles()) {
+    const title = html.match(/<title>([^<]*)<\/title>/)[1];
+    if (path === "404.html") {
+      assert.equal(meta(html, "property", "og:title"), undefined, "404: no share tags");
+      continue;
+    }
+    assert.equal(meta(html, "property", "og:title"), title, `${path}: og:title`);
+    assert.equal(meta(html, "name", "twitter:title"), title, `${path}: twitter:title`);
+    assert.equal(meta(html, "name", "twitter:card"), "summary", `${path}: twitter:card`);
+    assert.ok(meta(html, "property", "og:description"), `${path}: og:description`);
+    assert.equal(meta(html, "property", "og:image"), `${config.site}/logo-1024.png`, `${path}: og:image`);
+    const canonical = html.match(/<link rel="canonical" href="([^"]*)">/)[1];
+    assert.equal(meta(html, "property", "og:url"), canonical, `${path}: og:url matches canonical`);
+  }
+  assert.ok(existsSync(join(ROOT, "assets", "logo-1024.png")), "the share picture exists");
+});
+
+test("the picker at / previews in English only; image alt text follows the page language", () => {
+  const meta = (html, attr, name) => html.match(new RegExp(`<meta ${attr}="${name}" content="([^"]*)">`))?.[1];
+  const pages = new Map(htmlFiles());
+  const root = pages.get("index.html");
+  assert.ok(!/[一-鿿]/.test(meta(root, "property", "og:description")), "no Chinese in the root preview");
+  assert.equal(meta(pages.get("zh-hans/index.html"), "property", "og:image:alt"), `${config.brand} 标志`);
+  assert.equal(meta(pages.get("en/index.html"), "name", "twitter:image:alt"), `${config.brand} logo`);
+});

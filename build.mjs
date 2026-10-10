@@ -185,7 +185,40 @@ function alternates(page) {
   return list;
 }
 
-function documentHtml({ lang, title, description, canonical, links = [], noindex = false, body }) {
+// Link previews (X, Telegram, chat apps): Open Graph and X card tags from the page's own
+// title and description, with the square logo as the picture. Not on noindex pages.
+const SHARE_IMAGE = { path: "/logo-1024.png", size: 1024 };
+const OG_LOCALE = { "zh-Hans": "zh_CN", en: "en_US" };
+const IMAGE_ALT = { "zh-Hans": `${config.brand} 标志`, en: `${config.brand} logo` };
+
+function shareTags({ lang, title, description, canonical }) {
+  const image = abs(SHARE_IMAGE.path);
+  const alt = IMAGE_ALT[lang] ?? IMAGE_ALT.en;
+  const others = Object.entries(OG_LOCALE).filter(([code]) => code !== lang);
+  return [
+    '<meta property="og:type" content="website">',
+    `<meta property="og:site_name" content="${esc(config.brand)}">`,
+    `<meta property="og:title" content="${esc(title)}">`,
+    `<meta property="og:description" content="${esc(description)}">`,
+    canonical ? `<meta property="og:url" content="${esc(abs(canonical))}">` : "",
+    OG_LOCALE[lang] ? `<meta property="og:locale" content="${OG_LOCALE[lang]}">` : "",
+    ...others.map(([, loc]) => `<meta property="og:locale:alternate" content="${loc}">`),
+    `<meta property="og:image" content="${esc(image)}">`,
+    '<meta property="og:image:type" content="image/png">',
+    `<meta property="og:image:width" content="${SHARE_IMAGE.size}">`,
+    `<meta property="og:image:height" content="${SHARE_IMAGE.size}">`,
+    `<meta property="og:image:alt" content="${esc(alt)}">`,
+    '<meta name="twitter:card" content="summary">',
+    `<meta name="twitter:title" content="${esc(title)}">`,
+    `<meta name="twitter:description" content="${esc(description)}">`,
+    `<meta name="twitter:image" content="${esc(image)}">`,
+    `<meta name="twitter:image:alt" content="${esc(alt)}">`,
+  ];
+}
+
+// shareDescription: what link previews show, when it should differ from the meta description
+// (the bilingual picker at / previews in English only; cards cut off after about 100 characters).
+function documentHtml({ lang, title, description, shareDescription = description, canonical, links = [], noindex = false, body }) {
   const head = [
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
@@ -194,6 +227,7 @@ function documentHtml({ lang, title, description, canonical, links = [], noindex
     noindex ? '<meta name="robots" content="noindex">' : "",
     canonical ? `<link rel="canonical" href="${esc(abs(canonical))}">` : "",
     ...links.map(([hreflang, path]) => `<link rel="alternate" hreflang="${hreflang}" href="${esc(abs(path))}">`),
+    ...(noindex ? [] : shareTags({ lang, title, description: shareDescription, canonical })),
     '<link rel="icon" href="/logo.svg" type="image/svg+xml">',
     '<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">',
     '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
@@ -344,6 +378,7 @@ ${footerHtml(LANGS)}`;
     lang: ui[DEFAULT_LANG].htmlLang,
     title: config.brand,
     description: LANGS.map((l) => ui[l].tagline).join(" "),
+    shareDescription: ui.en.tagline,
     canonical: "/",
     links: alternates("index"),
     body,
