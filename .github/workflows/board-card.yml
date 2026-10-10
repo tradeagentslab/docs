@@ -1,0 +1,91 @@
+name: board card
+
+# Renders the arena board as a 1200 x 675 PNG (for X and Hacker News) with headless
+# Chromium, and keeps it as a workflow artifact. Manual only; deploys nothing.
+# Input: the sample in share/sample-board.json, or a standings file from the site's own
+# arena API (never an exchange). Anything not marked `sample: false` gets the sample mark.
+
+on:
+  workflow_dispatch:
+    inputs:
+      standings_url:
+        description: "Empty = share/sample-board.json. Or a board from the site's arena API: <site>/api/arena/v0/…json (site from site.config.json), e.g. …/api/arena/v0/weekly/2026-W44.json"
+        type: string
+        default: ""
+      rows:
+        description: "Rows on the card (at most 8 fit)"
+        type: string
+        default: "8"
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PLAYWRIGHT: playwright@1.48.2
+    steps:
+      - uses: actions/checkout@v5.0.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5.0.0
+        with:
+          node-version: 24
+
+      - name: Tests for the card
+        run: node --test tests/board-card.test.mjs
+
+      - name: Standings input
+        env:
+          URL: ${{ inputs.standings_url }}
+        run: |
+          set -eu
+          mkdir -p out
+          if [ -z "$URL" ]; then
+            cp share/sample-board.json out/standings.json
+          else
+            API="$(jq -r .site site.config.json)/api/arena/v0/"
+            case "$URL" in
+              "$API"*.json) ;;
+              *) echo "::error::standings_url must be a .json under $API"; exit 1 ;;
+            esac
+            curl -fsS --max-time 30 -o out/standings.json "$URL"
+          fi
+
+      - name: HTML (one self-contained file per language)
+        env:
+          ROWS: ${{ inputs.rows }}
+        run: |
+          set -eu
+          case "$ROWS" in ''|*[!0-9]*) echo "::error::rows must be a number"; exit 1 ;; esac
+          node share/board-card.mjs --in out/standings.json --out out/board-card-en.html --lang en --rows "$ROWS"
+          node share/board-card.mjs --in out/standings.json --out out/board-card-zh-hans.html --lang zh-hans --rows "$ROWS"
+
+      - name: Chromium (pinned Playwright) and CJK fonts
+        run: |
+          set -eu
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends fonts-noto-cjk
+          npx -y "$PLAYWRIGHT" install --with-deps chromium
+
+      - name: PNG 1200 x 675
+        run: |
+          set -eu
+          for L in en zh-hans; do
+            npx -y "$PLAYWRIGHT" screenshot -b chromium --viewport-size "1200,675" --wait-for-timeout 800 \
+              "file://$PWD/out/board-card-$L.html" "out/board-card-$L.png"
+            file "out/board-card-$L.png" | tee -a "$GITHUB_STEP_SUMMARY"
+            file "out/board-card-$L.png" | grep -q "1200 x 675"
+          done
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: board-card
+          path: |
+            out/*.png
+            out/*.html
+            out/standings.json
+          retention-days: 30

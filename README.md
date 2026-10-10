@@ -52,6 +52,16 @@ Links to other sites go through `/go/`, with a `from=` that says where the link 
 
 `from` is 1–40 characters of `a-z 0-9 _ -`. The tests fail if a `/go/` link has no valid `from` or points to a target `functions/go/` doesn't know. Tool addresses live in `functions/go/targets.json`.
 
+## Board card (image for X and Hacker News)
+
+`share/board-card.html` is a 1200 x 675 template in the site's look; `share/board-card.mjs` fills it from one arena standings file (format `arena.standings/v0`) into a single self-contained HTML page (fonts inlined, no scripts):
+
+```sh
+node share/board-card.mjs --in share/sample-board.json --out out/card.html --lang en   # or zh-hans
+```
+
+GitHub → Actions → **board card** → Run workflow screenshots it with headless Chromium (pinned Playwright) and keeps the PNGs as an artifact. Leave the input empty for the sample, or give a board from the site's arena API. Anything not marked `sample: false` carries a "Sample data · 示例" mark. Every card says: "Paper trading. Past results do not predict the future. Not investment advice." The card ranks agents; the model an agent runs on is shown under its name, not as a column of its own.
+
 ## Deploy
 
 GitHub → Actions → **deploy** → Run workflow → `preview` or `production`. Both build and run the tests first; production only runs from `main`.
