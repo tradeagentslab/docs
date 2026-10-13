@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import * as middleware from "../functions/_middleware.js";
 import * as go from "../functions/go/[[path]].js";
+import * as talk from "../functions/talk/send.js";
 import config from "../site.config.json" with { type: "json" };
 
 export { today } from "../functions/_shared.js";
@@ -21,10 +22,15 @@ export function fakeD1() {
           db.prepare(sql).run(...values);
           return { success: true };
         },
+        first: async () => {
+          const row = db.prepare(sql).get(...values);
+          return row ? { ...row } : null;
+        },
       }),
     }),
-    // For the tests: read rows back as plain objects.
+    // For the tests: read rows back as plain objects, or run any SQL.
     rows: (sql) => db.prepare(sql).all().map((row) => ({ ...row })),
+    exec: (sql) => db.exec(sql),
   };
 }
 
@@ -46,19 +52,25 @@ function staticSite(request) {
 }
 
 // Sends one request through the site like Cloudflare Pages: _middleware.js first, then
-// go/[[path]].js for /go/ addresses, then the static files. "country" becomes
+// go/[[path]].js for /go/ addresses, talk/send.js for /talk/send, then the static files.
+// "body" (a string) is sent as a form, application/x-www-form-urlencoded unless "type" says otherwise. "country" becomes
 // request.cf.country. Waits for counter writes before returning the response.
-export async function visit(path, { country, env = {}, method = "GET", userAgent } = {}) {
-  const request = new Request(config.site + path, { method, headers: userAgent ? { "user-agent": userAgent } : {} });
+export async function visit(path, { country, env = {}, method = "GET", userAgent, body, type } = {}) {
+  const headers = {};
+  if (userAgent) headers["user-agent"] = userAgent;
+  if (body !== undefined) headers["content-type"] = type ?? "application/x-www-form-urlencoded";
+  const request = new Request(config.site + path, { method, headers, body });
   Object.defineProperty(request, "cf", { value: country ? { country } : {} });
 
   const pending = [];
   const context = (next) => ({ request, env, params: {}, data: {}, next, waitUntil: (p) => pending.push(p) });
   const goHandler = method === "HEAD" ? go.onRequestHead : go.onRequestGet;
-  const afterMiddleware = async () =>
-    new URL(request.url).pathname.startsWith("/go/")
-      ? goHandler(context(async () => staticSite(request)))
-      : staticSite(request);
+  const afterMiddleware = async () => {
+    const { pathname } = new URL(request.url);
+    if (pathname.startsWith("/go/")) return goHandler(context(async () => staticSite(request)));
+    if (pathname === "/talk/send") return talk.onRequest(context(async () => staticSite(request)));
+    return staticSite(request);
+  };
 
   const response = await middleware.onRequest(context(afterMiddleware));
   await Promise.all(pending);

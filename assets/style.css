@@ -423,6 +423,60 @@ main {
   margin: 32px 0;
 }
 
+/* The interview form (/<lang>/talk/): a question over a full-width box, one per item. */
+.talk .qs {
+  padding-left: 1.4em;
+}
+
+.talk .qs li {
+  margin: 0 0 22px;
+}
+
+.talk label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.talk textarea {
+  display: block;
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.talk textarea:focus-visible {
+  border-color: var(--brand);
+}
+
+.talk .send {
+  font: 600 15px/1 var(--sans);
+  color: var(--brand-ink);
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: 6px;
+  padding: 12px 22px;
+  cursor: pointer;
+}
+
+.talk .send:hover {
+  filter: brightness(1.08);
+}
+
+/* The honeypot field: off screen for people, still there for bots that fill every input. */
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* Code. Shell blocks get selected whole with one click, so commands copy easily. */
 :not(pre) > code {
   font-size: .88em;
